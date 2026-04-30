@@ -114,8 +114,11 @@ for l in launches:
         launch_uyt = time_utc - timedelta(hours=3)
     except: continue
     
+    # Identificación de país y emoji
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
+    country_emoji = "🇺🇸" if is_usa else "🇨🇳" if is_chinese else "🌍"
+    
     is_twilight = 18 <= launch_uyt.hour <= 20
     is_match = is_chinese or is_usa
 
@@ -123,7 +126,7 @@ for l in launches:
     if is_match: label += f" {L['match']}"
     if is_twilight: label += f" {L['twilight']}"
 
-    with st.expander(f"{launch_uyt.strftime('%b %d | %H:%M')} - {name}{label}"):
+    with st.expander(f"{launch_uyt.strftime('%b %d | %H:%M')} - {country_emoji} {name}{label}"):
         st.write(f"**Hora de lanzamiento:** {launch_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
         
@@ -139,7 +142,6 @@ for l in launches:
                 t2 = launch_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
-            # Lógica para mostrar el sufijo de día solo si la ventana cambia de fecha respecto al lanzamiento
             suffix = ""
             if t1.date() > launch_uyt.date() or t2.date() > launch_uyt.date():
                 suffix = f" {L['next_day_suffix']}"
