@@ -13,7 +13,10 @@ TEXTS = {
     "ES": {
         "title": "🚀 Predictor de Avistamientos de Cohetes",
         "monitoring": f"Monitoreando: {LOCATION_NAME} ({LAT}, {LON})",
-        "intro": "Esta app predice cuándo la pluma de un cohete será visible desde Uruguay. Creado por Fefo Bouvier.",
+        "intro": """
+        Esta app predice cuándo la **pluma de luz** de un cohete será visible desde Uruguay. 
+        Creado por **Fefo Bouvier**.
+        """,
         "web_link": "🌐 Visitar fefobouvier.com",
         "match": "🎯 COINCIDENCIA",
         "twilight": "✨ CREPÚSCULO",
@@ -63,40 +66,21 @@ st.sidebar.title("Settings")
 lang_choice = st.sidebar.radio("Idioma / Language", ("Español", "English"))
 L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 
-# --- STYLING (FONDO TRANSPARENTE Y TOGGLES CLAROS) ---
+# --- STYLING ---
 st.markdown(f"""
     <style>
-    /* Fondo transparente para la app */
-    .stApp {{
-        background: transparent !important;
-    }}
-    
-    /* Texto de ubicación estilo coding */
     .location-text {{
         font-family: 'Source Code Pro', monospace;
         font-size: 0.9rem;
-        color: #555555;
+        color: #A0A0A0;
         margin-bottom: 20px;
     }}
-
-    /* Estilo de los Toggles (Expanders) */
-    .streamlit-expanderHeader {{
-        background-color: #F0F2F6 !important; /* Gris claro */
-        color: #31333F !important; /* Gris oscuro */
-        border-radius: 5px;
-    }}
-    
-    .streamlit-expanderContent {{
-        background-color: #F8F9FB !important; /* Un gris aún más suave para el contenido */
-        color: #31333F !important;
-    }}
-
-    /* Mantener colores de las métricas/cards */
     [data-testid="stMetricValue"] {{ color: #FFFFFF !important; font-size: 1.5rem !important; }}
     div[data-testid="stMetric"] {{
-        background-color: #262730 !important; /* Mantiene el contraste oscuro para los datos */
+        background-color: #262730 !important;
         padding: 15px !important;
         border-radius: 10px !important;
+        border: 1px solid #464855 !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -108,10 +92,10 @@ st.write(L["intro"])
 st.link_button(L["web_link"], "https://fefobouvier.com")
 st.divider()
 
-# --- DATA (LÍMITE DE 10 PARA MANTENER VELOCIDAD) ---
+# --- DATA ---
 def get_launches():
     try:
-        url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10"
+        url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=20"
         return requests.get(url, timeout=10).json().get('results', [])
     except: return []
 
@@ -130,6 +114,7 @@ for l in launches:
         launch_uyt = time_utc - timedelta(hours=3)
     except: continue
     
+    # Identificación de país y emoji
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
     country_emoji = "🇺🇸" if is_usa else "🇨🇳" if is_chinese else "🌍"
@@ -149,10 +134,12 @@ for l in launches:
             st.success(L["high_match_desc"])
             
             if is_chinese:
-                t1, t2 = launch_uyt + timedelta(minutes=15), launch_uyt + timedelta(minutes=45)
+                t1 = launch_uyt + timedelta(minutes=15)
+                t2 = launch_uyt + timedelta(minutes=45)
                 d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
             else:
-                t1, t2 = launch_uyt + timedelta(hours=1, minutes=45), launch_uyt + timedelta(hours=3, minutes=30)
+                t1 = launch_uyt + timedelta(hours=1, minutes=45)
+                t2 = launch_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
             suffix = ""
