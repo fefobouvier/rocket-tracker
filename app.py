@@ -31,10 +31,8 @@ TEXTS = {
         "monitoring": f"Monitoreando: {LOCATION_NAME} ({LAT}, {LON})",
         "intro": "Esta app predice cuándo la **pluma de luz** de un cohete será visible desde Uruguay. Creado por **Fefo Bouvier**.",
         "web_link": "🌐 Visitar fefobouvier.com",
-        "match": "🎯 COINCIDENCIA",
         "twilight": "✨ CREPÚSCULO",
-        "high_match_desc": "🎯 COINCIDENCIA: Patrón histórico detectado para Uruguay.",
-        "low_match_desc": "🔭 Baja probabilidad de ver pluma iluminada.",
+        "high_match_desc": "🎯 Patrón histórico detectado para Uruguay.",
         "obs_window": "📅 Ventana de observación estimada:",
         "next_day_suffix": "(+1 día)",
         "direction": "Dirección",
@@ -54,10 +52,8 @@ TEXTS = {
         "monitoring": f"Monitoring: {LOCATION_NAME} ({LAT}, {LON})",
         "intro": "This app predicts rocket plume visibility from Uruguay. Created by Fefo Bouvier.",
         "web_link": "🌐 Visit fefobouvier.com",
-        "match": "🎯 MATCH",
         "twilight": "✨ TWILIGHT",
-        "high_match_desc": "🎯 MATCH: Historical sighting pattern detected.",
-        "low_match_desc": "🔭 Low probability for a sunlit plume.",
+        "high_match_desc": "🎯 Historical sighting pattern detected.",
         "obs_window": "📅 Estimated Observation Window:",
         "next_day_suffix": "(+1 day)",
         "direction": "Direction",
@@ -79,7 +75,7 @@ st.sidebar.title("Settings")
 lang_choice = st.sidebar.radio("Idioma / Language", ("Español", "English"))
 L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 
-# --- STYLING (DISEÑO ORIGINAL OSCURO) ---
+# --- STYLING ---
 st.markdown(f"""
     <style>
     .location-text {{
@@ -105,73 +101,66 @@ st.write(L["intro"])
 st.link_button(L["web_link"], "https://fefobouvier.com")
 st.divider()
 
-# --- DATA (PRÓXIMOS 20) ---
+# --- DATA ---
 @st.cache_data(ttl=300)
 def get_launches():
     try:
-        url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=20"
+        url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=30"
         return requests.get(url, timeout=10).json().get('results', [])
     except: return []
 
 launches = get_launches()
 if not launches: st.warning(L["fetching_error"])
 
+# Filtro para mostrar solo los que son MATCH
 for l in launches:
-    name = l.get('name', 'Mission')
     site = l.get('pad', {}).get('location', {}).get('name', 'Unknown')
-    raw_time = l.get('net') or l.get('window_start')
     
-    if not raw_time: continue
+    is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan", "Wenchang"])
+    is_florida = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral"])
+    
+    # Solo procedemos si es Florida o China
+    if not (is_chinese or is_florida):
+        continue
+
+    name = l.get('name', 'Mission')
+    raw_time = l.get('net') or l.get('window_start')
     
     try:
         time_utc = datetime.strptime(raw_time, "%Y-%m-%dT%H:%M:%SZ")
         launch_uyt = time_utc - timedelta(hours=3)
     except: continue
     
-    # Identificación de sitios específicos
-    is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan", "Wenchang"])
-    is_florida = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral"])
-    is_vandenberg = "Vandenberg" in site
-    is_frenchguiana = any(w in site for w in ["Guiana Space Centre", "French Guiana"])
-    is_newzealand = any(w in site for w in ["Mahia Peninsula", "New Zealand"])
-    
-    # Emojis de país
-    country_emoji = "🇺🇸" if (is_florida or is_vandenberg) else "🇨🇳" if is_chinese else "🇬🇫" if is_frenchguiana else "🇳🇿" if is_newzealand else "🌍"
-    
-    # Lógica de MATCH (Solo Florida y China por antecedentes confirmados)[cite: 1]
-    is_match = is_chinese or is_florida
+    country_emoji = "🇺🇸" if is_florida else "🇨🇳"
     is_twilight = es_crepusculo_real(launch_uyt)
 
     label = ""
-    if is_match: label += f" {L['match']}"
     if is_twilight: label += f" {L['twilight']}"
 
     with st.expander(f"{launch_uyt.strftime('%b %d | %H:%M')} - {country_emoji} {name}{label}"):
         st.write(f"**Hora de lanzamiento:** {launch_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
         
-        if is_match:
-            st.success(L["high_match_desc"])
-            if is_chinese:
-                t1, t2 = launch_uyt + timedelta(minutes=15), launch_uyt + timedelta(minutes=45)
-                d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
-            else: # Florida[cite: 1]
-                t1, t2 = launch_uyt + timedelta(hours=1, minutes=45), launch_uyt + timedelta(hours=3, minutes=30)
-                d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
+        st.success(L["high_match_desc"])
+        
+        if is_chinese:
+            t1, t2 = launch_uyt + timedelta(minutes=15), launch_uyt + timedelta(minutes=45)
+            d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
+        else: # Florida
+            t1, t2 = launch_uyt + timedelta(hours=1, minutes=45), launch_uyt + timedelta(hours=3, minutes=30)
+            d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
-            suffix = ""
-            if t1.date() > launch_uyt.date() or t2.date() > launch_uyt.date():
-                suffix = f" {L['next_day_suffix']}"
+        suffix = ""
+        if t1.date() > launch_uyt.date() or t2.date() > launch_uyt.date():
+            suffix = f" {L['next_day_suffix']}"
 
-            st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')} — {t2.strftime('%H:%M')}{suffix} UYT**")
-            
-            c1, c2, c3 = st.columns(3)
-            c1.metric(L["direction"], d)
-            c2.metric(L["elevation"], e)
-            c3.metric(L["movement"], m)
-            
-            if is_twilight: st.error(L["prime_viewing"])
-        else:
-            st.write(L["low_match_desc"])
+        st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')} — {t2.strftime('%H:%M')}{suffix} UYT**")
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric(L["direction"], d)
+        c2.metric(L["elevation"], e)
+        c3.metric(L["movement"], m)
+        
+        if is_twilight: st.error(L["prime_viewing"])
 
         st.link_button(L["btn_details"], "https://nextspaceflight.com/launches/")
