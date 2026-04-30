@@ -37,7 +37,7 @@ TEXTS = {
         "move_ne": "al NORESTE"
     },
     "EN": {
-        "title": "🚀 Rocket Sighting Predictor",
+        "title": "🚀 Rocket launches visible from Uruguay: Timings & predictions",
         "monitoring": f"Monitoring: {LOCATION_NAME} ({LAT}, {LON})",
         "intro": "This app predicts rocket plume visibility from Uruguay. Created by Fefo Bouvier.",
         "web_link": "🌐 Visit fefobouvier.com",
