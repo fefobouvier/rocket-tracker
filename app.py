@@ -23,7 +23,7 @@ TEXTS = {
         "high_match_desc": "🎯 COINCIDENCIA: Patrón histórico detectado para Uruguay.",
         "low_match_desc": "🔭 Baja probabilidad de ver pluma iluminada.",
         "obs_window": "📅 Ventana de observación estimada:",
-        "next_day": "(+1 día)",
+        "next_day_suffix": "(+1 día)",
         "direction": "Dirección",
         "elevation": "Elevación",
         "movement": "Movimiento",
@@ -46,7 +46,7 @@ TEXTS = {
         "high_match_desc": "🎯 MATCH: Historical sighting pattern detected.",
         "low_match_desc": "🔭 Low probability for a sunlit plume.",
         "obs_window": "📅 Estimated Observation Window:",
-        "next_day": "(+1 day)",
+        "next_day_suffix": "(+1 day)",
         "direction": "Direction",
         "elevation": "Elevation",
         "movement": "Movement",
@@ -139,11 +139,12 @@ for l in launches:
                 t2 = launch_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
-            # Lógica para detectar si la ventana pasó al día siguiente
-            day_label_t1 = f" {L['next_day']}" if t1.date() > launch_uyt.date() else ""
-            day_label_t2 = f" {L['next_day']}" if t2.date() > launch_uyt.date() else ""
+            # Lógica para mostrar el sufijo de día solo si la ventana cambia de fecha respecto al lanzamiento
+            suffix = ""
+            if t1.date() > launch_uyt.date() or t2.date() > launch_uyt.date():
+                suffix = f" {L['next_day_suffix']}"
 
-            st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')}{day_label_t1} — {t2.strftime('%H:%M')}{day_label_t2} UYT**")
+            st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')} — {t2.strftime('%H:%M')}{suffix} UYT**")
             
             c1, c2, c3 = st.columns(3)
             c1.metric(L["direction"], d)
