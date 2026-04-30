@@ -7,34 +7,22 @@ LAT, LON = -34.47, -57.84
 
 st.set_page_config(page_title="Uruguay Rocket Tracker", page_icon="🚀", layout="wide")
 
-# Custom CSS to make the matches stand out more
+# Corrected CSS logic
 st.markdown("""
     <style>
-    .match-badge {
-        background-color: #ff4b4b;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-weight: bold;
-        margin-left: 10px;
-    }
-    .twilight-badge {
-        background-color: #fca311;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-weight: bold;
-        margin-left: 10px;
+    .stMetric {
+        background-color: #f0f2f6;
+        padding: 10px;
+        border-radius: 10px;
     }
     </style>
-    """, unsafe_with_stdio=True)
+    """, unsafe_allow_html=True)
 
 st.title("🚀 Uruguay Rocket Sighting Predictor")
 st.markdown(f"**Monitoring Skies over:** Colonia del Sacramento ({LAT}, {LON})")
 
 def get_launches():
     try:
-        # Fetching upcoming missions
         url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10"
         data = requests.get(url).json()
         return data.get('results', [])
@@ -50,7 +38,9 @@ for l in launches:
     site = location.get('name', 'Unknown Site')
     
     # Official URL for "More Info"
-    official_url = f"https://www.rocketlaunch.live/launch/{l.get('slug', '')}" if l.get('slug') else "https://nextspaceflight.com/launches/"
+    official_url = f"https://nextspaceflight.com/launches/"
+    if l.get('slug'):
+        official_url = f"https://www.rocketlaunch.live/launch/{l.get('slug')}"
     
     time_utc_str = l.get('net')
     if not time_utc_str: continue
@@ -69,11 +59,11 @@ for l in launches:
     # CREATE VISUAL LABELS FOR THE HEADER
     label = ""
     if is_high_interest:
-        label += " 🎯 HIGH MATCH"
+        label += " 🎯 MATCH"
     if is_twilight:
         label += " ✨ TWILIGHT"
 
-    # THE EXPANDER (Now with labels in the title)
+    # THE EXPANDER
     with st.expander(f"{time_uyt.strftime('%b %d - %H:%M')} | {name}{label}"):
         st.write(f"**Launch Site:** {site}")
         
@@ -100,5 +90,4 @@ for l in launches:
         else:
             st.write("🔭 General Launch: Low probability for a 'jellyfish' plume.")
 
-        # LINK TO OFFICIAL DATA
         st.link_button("🌐 View Official Mission Data", official_url)
