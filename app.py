@@ -35,10 +35,12 @@ TEXTS = {
         """,
         "web_link": "🌐 Visitar mi web",
         "monitoring": "Ubicación seleccionada:",
+        "timezone_notice": "⚠️ *Todos los horarios están expresados en la hora oficial de Uruguay (UYT).* ",
         "lang_label": "Idioma",
         "loc_label": "Departamento",
         "match": "🎯 COINCIDENCIA",
         "twilight": "✨ CREPÚSCULO",
+        "launch_time": "⏰ Hora exacta de lanzamiento:",
         "high_match_desc": "🎯 COINCIDENCIA: Sigue tus patrones históricos de avistamiento.",
         "low_match_desc": "🔭 Baja probabilidad de ver un 'jellyfish' (pluma iluminada).",
         "obs_window": "📅 Ventana de observación estimada:",
@@ -64,10 +66,12 @@ TEXTS = {
         """,
         "web_link": "🌐 Visit my website",
         "monitoring": "Selected Location:",
+        "timezone_notice": "⚠️ *All times are expressed in Uruguay Standard Time (UYT).* ",
         "lang_label": "Language",
         "loc_label": "Department",
         "match": "🎯 MATCH",
         "twilight": "✨ TWILIGHT",
+        "launch_time": "⏰ Exact launch time:",
         "high_match_desc": "🎯 MATCH: Matches your historical sighting patterns.",
         "low_match_desc": "🔭 Low probability for a sunlit 'jellyfish' plume.",
         "obs_window": "📅 Estimated Observation Window:",
@@ -93,7 +97,7 @@ st.sidebar.title("Settings / Ajustes")
 lang_choice = st.sidebar.radio("Idioma / Language", ("Español", "English"))
 L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 
-selected_dept = st.sidebar.selectbox(L["loc_label"], list(DEPARTMENTS.keys()), index=0) # Default Montevideo
+selected_dept = st.sidebar.selectbox(L["loc_label"], list(DEPARTMENTS.keys()), index=0)
 lat, lon = DEPARTMENTS[selected_dept]
 
 # --- STYLING ---
@@ -111,6 +115,7 @@ st.write(L["intro"])
 st.link_button(L["web_link"], "https://fefobouvier.com")
 st.divider()
 st.subheader(f"{L['monitoring']} {selected_dept}")
+st.info(L["timezone_notice"])
 
 # --- DATA FETCHING ---
 def get_launches():
@@ -142,6 +147,7 @@ for l in launches:
     if is_twilight: label += f" {L['twilight']}"
 
     with st.expander(f"{time_uyt.strftime('%b %d - %H:%M')} | {name}{label}"):
+        st.write(f"**{L['launch_time']}** {time_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
         
         if is_chinese or is_usa:
