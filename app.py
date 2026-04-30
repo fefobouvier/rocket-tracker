@@ -5,12 +5,36 @@ from datetime import datetime, timedelta
 # YOUR COORDINATES (Colonia del Sacramento)
 LAT, LON = -34.47, -57.84
 
-st.set_page_config(page_title="Uruguay Rocket Tracker", page_icon="🚀")
+st.set_page_config(page_title="Uruguay Rocket Tracker", page_icon="🚀", layout="wide")
+
+# Custom CSS to make the matches stand out more
+st.markdown("""
+    <style>
+    .match-badge {
+        background-color: #ff4b4b;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    .twilight-badge {
+        background-color: #fca311;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    </style>
+    """, unsafe_with_stdio=True)
+
 st.title("🚀 Uruguay Rocket Sighting Predictor")
-st.markdown(f"**Location:** Colonia del Sacramento ({LAT}, {LON})")
+st.markdown(f"**Monitoring Skies over:** Colonia del Sacramento ({LAT}, {LON})")
 
 def get_launches():
     try:
+        # Fetching upcoming missions
         url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10"
         data = requests.get(url).json()
         return data.get('results', [])
@@ -25,6 +49,9 @@ for l in launches:
     location = pad.get('location', {})
     site = location.get('name', 'Unknown Site')
     
+    # Official URL for "More Info"
+    official_url = f"https://www.rocketlaunch.live/launch/{l.get('slug', '')}" if l.get('slug') else "https://nextspaceflight.com/launches/"
+    
     time_utc_str = l.get('net')
     if not time_utc_str: continue
         
@@ -33,52 +60,32 @@ for l in launches:
     
     # PATTERN CLASSIFICATION
     is_chinese = any(word in site for word in ["Taiyuan", "Xichang", "Jiuquan"])
-    is_florida = "Florida" in site or "Kennedy" in site or "Cape Canaveral" in site
+    is_florida = any(word in site for word in ["Florida", "Kennedy", "Cape Canaveral"])
     is_vandenberg = "Vandenberg" in site
+    
+    is_twilight = 18 <= time_uyt.hour <= 20
+    is_high_interest = is_chinese or is_florida or is_vandenberg
 
-    with st.expander(f"{name} — {time_uyt.strftime('%b %d, %H:%M UYT')}"):
+    # CREATE VISUAL LABELS FOR THE HEADER
+    label = ""
+    if is_high_interest:
+        label += " 🎯 HIGH MATCH"
+    if is_twilight:
+        label += " ✨ TWILIGHT"
+
+    # THE EXPANDER (Now with labels in the title)
+    with st.expander(f"{time_uyt.strftime('%b %d - %H:%M')} | {name}{label}"):
         st.write(f"**Launch Site:** {site}")
         
-        # 1. TIME OF OBSERVATION LOGIC
-        # Plumes usually appear 15-45 mins after launch for Chinese rockets, 
-        # but 2+ hours later for high-orbit Florida missions (like today).
-        if is_chinese:
-            obs_start = time_uyt + timedelta(minutes=20)
-            obs_end = time_uyt + timedelta(minutes=50)
-            look_dir = "SOUTHWEST (220°)"
-            look_alt = "15° - 35° (Low to Mid-horizon)"
-            move_to = "NORTH"
-        elif is_florida:
-            # High-orbit missions (like Falcon Heavy) are often visible 2-4 hours later
-            obs_start = time_uyt + timedelta(hours=2)
-            obs_end = time_uyt + timedelta(hours=4)
-            look_dir = "NORTH (0°)"
-            look_alt = "20° - 40° (Mid-horizon)"
-            move_to = "NORTHEAST"
-        else:
-            obs_start, obs_end = time_uyt, time_uyt + timedelta(minutes=30)
-            look_dir, look_alt, move_to = "Unknown", "Unknown", "Unknown"
+        if is_high_interest:
+            st.success("🎯 MATCH: This mission follows your historical sighting patterns.")
+            
+            # Observations Windows
+            if is_chinese:
+                obs_start, obs_end = time_uyt + timedelta(minutes=20), time_uyt + timedelta(minutes=50)
+                look_dir, look_alt, move_to = "SOUTHWEST (220°)", "15° - 35°", "NORTH"
+            else:
+                obs_start, obs_end = time_uyt + timedelta(hours=2), time_uyt + timedelta(hours=4)
+                look_dir, look_alt, move_to = "NORTH (0°)", "20° - 40°", "NORTHEAST"
 
-        # 2. VISIBILITY STATUS
-        is_twilight = 18 <= time_uyt.hour <= 20
-        is_midnight = 21 <= time_uyt.hour <= 23
-        
-        if is_chinese or is_florida:
-            st.success("🎯 MATCH FOUND")
-            st.info(f"📅 **Estimated Observation Window:** {obs_start.strftime('%H:%M')} — {obs_end.strftime('%H:%M')} UYT")
-            
-            # THE SMART COMPASS
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Initial Direction", look_dir)
-            with col2:
-                st.metric("Elevation", look_alt)
-            
-            st.write(f"➡️ **Movement:** Watch for it moving toward the **{move_to}**.")
-            
-            if is_twilight:
-                st.error("✨ PRIME: Perfect Sunlit Plume conditions.")
-            elif is_midnight:
-                st.warning("🌙 LATE NIGHT: High-altitude glow possible (check for upper-stage burns).")
-        else:
-            st.write("🔭 Not a standard 'Uruguay Pattern' launch.")
+            st.info(f"📅 **Estimated Observation Window:** {obs_start
