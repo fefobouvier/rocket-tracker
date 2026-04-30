@@ -74,27 +74,34 @@ L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 selected_dept = st.sidebar.selectbox(L["loc_label"], list(DEPARTMENTS.keys()), index=0)
 lat, lon = DEPARTMENTS[selected_dept]
 
-# --- CSS DINÁMICO (Corrección de visibilidad) ---
+# --- CSS DINÁMICO (SOLO ENCABEZADO VERDE) ---
 st.markdown("""
     <style>
-    /* Métricas generales */
+    /* Métricas generales (Interior siempre blanco) */
     [data-testid="stMetricValue"] { color: #1f1f1f !important; font-size: 1.5rem; }
     .stMetric { background-color: #ffffff !important; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
     
-    /* FIX: Forzar texto oscuro en expanders MATCHES (Fondo Verde) */
-    .element-container:has(div.match-box) + div div.stExpander p {
+    /* Estilo del Expandible cuando es un MATCH */
+    /* Apuntamos específicamente al contenedor del título (summary) */
+    .element-container:has(div.match-box) + div [data-testid="stExpanderSummary"] {
+        background-color: #dcedc8 !important; /* Fondo verde del encabezado */
+        border-radius: 4px;
+    }
+    
+    /* Forzar texto negro solo en el título del MATCH */
+    .element-container:has(div.match-box) + div [data-testid="stExpanderSummary"] p {
         color: #1a1a1a !important;
         font-weight: 600 !important;
     }
-    
-    .element-container:has(div.match-box) + div div.stExpander {
-        background-color: #dcedc8 !important;
-        border: 1px solid #c5e1a5 !important;
+
+    /* Forzar flecha negra en el encabezado verde */
+    .element-container:has(div.match-box) + div [data-testid="stExpanderSummary"] svg {
+        fill: #1a1a1a !important;
     }
 
-    /* Ajuste de flecha para fondo verde */
-    .element-container:has(div.match-box) + div div.stExpander svg {
-        fill: #1a1a1a !important;
+    /* Asegurar que el INTERIOR del expander sea blanco/estándar */
+    .element-container:has(div.match-box) + div [data-testid="stExpanderDetails"] {
+        background-color: transparent !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -105,7 +112,6 @@ st.subheader(f"{L['monitoring']} {selected_dept}")
 # --- LÓGICA DE DATOS ---
 def get_data():
     try:
-        # Usamos un User-Agent para evitar bloqueos de la API
         headers = {'User-Agent': 'UruguayRocketTracker/1.0'}
         response = requests.get("https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10", headers=headers)
         return response.json().get('results', [])
@@ -113,7 +119,6 @@ def get_data():
         return []
 
 launches = get_data()
-
 if not launches:
     st.warning(L["err"])
 
@@ -121,20 +126,17 @@ for l in launches:
     name = l.get('name', 'Mission')
     site = l.get('pad', {}).get('location', {}).get('name', '')
     
-    # Manejo de tiempo
     try:
         time_utc = datetime.strptime(l.get('net'), "%Y-%m-%dT%H:%M:%SZ")
         time_uyt = time_utc - timedelta(hours=3)
-    except:
-        continue
+    except: continue
     
-    # Clasificación de patrones
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
     is_twilight = 18 <= time_uyt.hour <= 20
     is_match = is_chinese or is_usa
 
-    # Marcador para el CSS
+    # Marcador invisible para el CSS
     if is_match:
         st.markdown('<div class="match-box"></div>', unsafe_allow_html=True)
 
@@ -146,7 +148,6 @@ for l in launches:
         st.write(f"**{site}**")
         
         if is_match:
-            # Ventanas de tiempo basadas en tus avistamientos
             if is_chinese:
                 t1, t2 = time_uyt + timedelta(minutes=20), time_uyt + timedelta(minutes=50)
                 d, e, m = L["sw"], "15°-35°", L["m_n"]
