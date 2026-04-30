@@ -31,6 +31,7 @@ TEXTS = {
         "monitoring": "Ubicación:",
         "lang_label": "Idioma",
         "loc_label": "Departamento",
+        "match": "🎯 COINCIDENCIA",
         "twilight": "✨ CREPÚSCULO",
         "obs_window": "📅 Ventana de observación:",
         "direction": "Dirección",
@@ -49,6 +50,7 @@ TEXTS = {
         "monitoring": "Location:",
         "lang_label": "Language",
         "loc_label": "Department",
+        "match": "🎯 MATCH",
         "twilight": "✨ TWILIGHT",
         "obs_window": "📅 Observation Window:",
         "direction": "Direction",
@@ -74,35 +76,11 @@ L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 selected_dept = st.sidebar.selectbox(L["loc_label"], list(DEPARTMENTS.keys()), index=0)
 lat, lon = DEPARTMENTS[selected_dept]
 
-# --- CSS DINÁMICO (SOLO ENCABEZADO VERDE) ---
+# --- CSS ESTÁNDAR ---
 st.markdown("""
     <style>
-    /* Métricas generales (Interior siempre blanco) */
     [data-testid="stMetricValue"] { color: #1f1f1f !important; font-size: 1.5rem; }
-    .stMetric { background-color: #ffffff !important; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
-    
-    /* Estilo del Expandible cuando es un MATCH */
-    /* Apuntamos específicamente al contenedor del título (summary) */
-    .element-container:has(div.match-box) + div [data-testid="stExpanderSummary"] {
-        background-color: #dcedc8 !important; /* Fondo verde del encabezado */
-        border-radius: 4px;
-    }
-    
-    /* Forzar texto negro solo en el título del MATCH */
-    .element-container:has(div.match-box) + div [data-testid="stExpanderSummary"] p {
-        color: #1a1a1a !important;
-        font-weight: 600 !important;
-    }
-
-    /* Forzar flecha negra en el encabezado verde */
-    .element-container:has(div.match-box) + div [data-testid="stExpanderSummary"] svg {
-        fill: #1a1a1a !important;
-    }
-
-    /* Asegurar que el INTERIOR del expander sea blanco/estándar */
-    .element-container:has(div.match-box) + div [data-testid="stExpanderDetails"] {
-        background-color: transparent !important;
-    }
+    .stMetric { background-color: #f0f2f6 !important; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -136,11 +114,10 @@ for l in launches:
     is_twilight = 18 <= time_uyt.hour <= 20
     is_match = is_chinese or is_usa
 
-    # Marcador invisible para el CSS
+    # Construcción del título del expander
+    header_text = f"{time_uyt.strftime('%b %d - %H:%M')} | {name}"
     if is_match:
-        st.markdown('<div class="match-box"></div>', unsafe_allow_html=True)
-
-    header_text = f"{time_uyt.strftime('%H:%M')} | {name}"
+        header_text += f" {L['match']}"
     if is_twilight:
         header_text += f" {L['twilight']}"
 
