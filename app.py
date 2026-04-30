@@ -88,4 +88,17 @@ for l in launches:
                 obs_start, obs_end = time_uyt + timedelta(hours=2), time_uyt + timedelta(hours=4)
                 look_dir, look_alt, move_to = "NORTH (0°)", "20° - 40°", "NORTHEAST"
 
-            st.info(f"📅 **Estimated Observation Window:** {obs_start
+            st.info(f"📅 **Estimated Observation Window:** {obs_start.strftime('%H:%M')} — {obs_end.strftime('%H:%M')} UYT")
+            
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Direction", look_dir)
+            c2.metric("Elevation", look_alt)
+            c3.metric("Movement", move_to)
+
+            if is_twilight:
+                st.error("✨ PRIME VIEWING: Classic 'Jellyfish' plume likely.")
+        else:
+            st.write("🔭 General Launch: Low probability for a 'jellyfish' plume.")
+
+        # LINK TO OFFICIAL DATA
+        st.link_button("🌐 View Official Mission Data", official_url)
