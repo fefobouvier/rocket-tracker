@@ -1,12 +1,28 @@
 import streamlit as st
 import requests
 from datetime import datetime, timedelta
+import math
 
 # --- CONFIGURACIÓN FIJA ---
 LOCATION_NAME = "Colonia del Sacramento"
 LAT, LON = -34.47, -57.84
 
 st.set_page_config(page_title="Rocket Tracker", page_icon="🚀", layout="wide")
+
+# --- FUNCIONES DE APOYO ---
+def es_crepusculo_real(fecha_uyt):
+    """Calcula si la hora del lanzamiento cae en la ventana de crepúsculo en Colonia."""
+    dia_del_año = fecha_uyt.timetuple().tm_yday
+    # Estimación de la puesta del sol para Colonia del Sacramento
+    # En invierno (junio) ~17:40, en verano (enero) ~20:10
+    hora_puesta = 18.9 + 1.2 * math.cos(2 * math.pi * (dia_del_año + 10) / 365)
+    
+    # Ventana óptima: desde la puesta hasta 1.5 horas después (crepúsculo náutico/astronómico)
+    inicio_ventana = hora_puesta
+    fin_ventana = hora_puesta + 1.5
+    
+    hora_decimal = fecha_uyt.hour + fecha_uyt.minute / 60
+    return inicio_ventana <= hora_decimal <= fin_ventana
 
 # --- DICCIONARIO MULTILINGÜE ---
 TEXTS = {
@@ -27,7 +43,7 @@ TEXTS = {
         "direction": "Dirección",
         "elevation": "Elevación",
         "movement": "Movimiento",
-        "prime_viewing": "✨ VISIÓN ÓPTIMA: Pluma iluminada por el sol.",
+        "prime_viewing": "✨ VISIÓN ÓPTIMA: Pluma iluminada por el sol (Efecto Jellyfish).",
         "btn_details": "🌐 Ver detalles de la misión",
         "fetching_error": "Error al obtener datos.",
         "site_label": "Sitio de Lanzamiento",
@@ -50,7 +66,7 @@ TEXTS = {
         "direction": "Direction",
         "elevation": "Elevation",
         "movement": "Movement",
-        "prime_viewing": "✨ PRIME VIEWING: Sunlit plume likely.",
+        "prime_viewing": "✨ PRIME VIEWING: Sunlit plume (Jellyfish effect).",
         "btn_details": "🌐 View Mission Details",
         "fetching_error": "Unable to fetch data.",
         "site_label": "Launch Site",
@@ -69,12 +85,15 @@ L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 # --- STYLING ---
 st.markdown(f"""
     <style>
+    .stApp {{ background: transparent !important; }}
     .location-text {{
         font-family: 'Source Code Pro', monospace;
         font-size: 0.9rem;
         color: #A0A0A0;
         margin-bottom: 20px;
     }}
+    .streamlit-expanderHeader {{ background-color: #F0F2F6 !important; color: #31333F !important; }}
+    .streamlit-expanderContent {{ background-color: #F8F9FB !important; color: #31333F !important; }}
     [data-testid="stMetricValue"] {{ color: #FFFFFF !important; font-size: 1.5rem !important; }}
     div[data-testid="stMetric"] {{
         background-color: #262730 !important;
@@ -114,14 +133,14 @@ for l in launches:
         launch_uyt = time_utc - timedelta(hours=3)
     except: continue
     
-    # Identificación de país y emoji
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan", "Wenchang"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg", "SpaceX", "Texas"])
     is_frenchguiana = any(w in site for w in ["Guiana Space Centre", "French Guiana"])
     is_newzealand = any(w in site for w in ["Mahia Peninsula", "New Zealand"])
     country_emoji = "🇺🇸" if is_usa else "🇨🇳" if is_chinese else "🇬🇫" if is_frenchguiana else "🇳🇿" if is_newzealand else "🌍"
     
-    is_twilight = 18 <= launch_uyt.hour <= 20
+    # Lógica dinámica del crepúsculo basada en la fecha del lanzamiento
+    is_twilight = es_crepusculo_real(launch_uyt)
     is_match = is_chinese or is_usa
 
     label = ""
@@ -134,14 +153,11 @@ for l in launches:
         
         if is_match:
             st.success(L["high_match_desc"])
-            
             if is_chinese:
-                t1 = launch_uyt + timedelta(minutes=15)
-                t2 = launch_uyt + timedelta(minutes=45)
+                t1, t2 = launch_uyt + timedelta(minutes=15), launch_uyt + timedelta(minutes=45)
                 d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
             else:
-                t1 = launch_uyt + timedelta(hours=1, minutes=45)
-                t2 = launch_uyt + timedelta(hours=3, minutes=30)
+                t1, t2 = launch_uyt + timedelta(hours=1, minutes=45), launch_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
             suffix = ""
