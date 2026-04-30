@@ -23,6 +23,7 @@ TEXTS = {
         "high_match_desc": "🎯 COINCIDENCIA: Patrón histórico detectado para Uruguay.",
         "low_match_desc": "🔭 Baja probabilidad de ver pluma iluminada.",
         "obs_window": "📅 Ventana de observación estimada:",
+        "next_day": "(+1 día)",
         "direction": "Dirección",
         "elevation": "Elevación",
         "movement": "Movimiento",
@@ -45,6 +46,7 @@ TEXTS = {
         "high_match_desc": "🎯 MATCH: Historical sighting pattern detected.",
         "low_match_desc": "🔭 Low probability for a sunlit plume.",
         "obs_window": "📅 Estimated Observation Window:",
+        "next_day": "(+1 day)",
         "direction": "Direction",
         "elevation": "Elevation",
         "movement": "Movement",
@@ -67,7 +69,6 @@ L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 # --- STYLING ---
 st.markdown(f"""
     <style>
-    /* Estilo de código para la ubicación */
     .location-text {{
         font-family: 'Source Code Pro', monospace;
         font-size: 0.9rem;
@@ -106,39 +107,49 @@ for l in launches:
     site = l.get('pad', {}).get('location', {}).get('name', 'Unknown')
     raw_time = l.get('net') or l.get('window_start')
     
+    if not raw_time: continue
+    
     try:
         time_utc = datetime.strptime(raw_time, "%Y-%m-%dT%H:%M:%SZ")
-        time_uyt = time_utc - timedelta(hours=3)
+        launch_uyt = time_utc - timedelta(hours=3)
     except: continue
     
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
-    is_twilight = 18 <= time_uyt.hour <= 20
+    is_twilight = 18 <= launch_uyt.hour <= 20
     is_match = is_chinese or is_usa
 
     label = ""
     if is_match: label += f" {L['match']}"
     if is_twilight: label += f" {L['twilight']}"
 
-    with st.expander(f"{time_uyt.strftime('%b %d | %H:%M')} - {name}{label}"):
-        st.write(f"**Hora de lanzamiento:** {time_uyt.strftime('%H:%M')} UYT")
+    with st.expander(f"{launch_uyt.strftime('%b %d | %H:%M')} - {name}{label}"):
+        st.write(f"**Hora de lanzamiento:** {launch_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
         
         if is_match:
             st.success(L["high_match_desc"])
+            
             if is_chinese:
-                t1, t2 = time_uyt + timedelta(minutes=15), time_uyt + timedelta(minutes=45)
+                t1 = launch_uyt + timedelta(minutes=15)
+                t2 = launch_uyt + timedelta(minutes=45)
                 d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
             else:
-                t1, t2 = time_uyt + timedelta(hours=1, minutes=45), time_uyt + timedelta(hours=3, minutes=30)
+                t1 = launch_uyt + timedelta(hours=1, minutes=45)
+                t2 = launch_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
-            st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')} — {t2.strftime('%H:%M')} UYT**")
+            # Lógica para detectar si la ventana pasó al día siguiente
+            day_label_t1 = f" {L['next_day']}" if t1.date() > launch_uyt.date() else ""
+            day_label_t2 = f" {L['next_day']}" if t2.date() > launch_uyt.date() else ""
+
+            st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')}{day_label_t1} — {t2.strftime('%H:%M')}{day_label_t2} UYT**")
             
             c1, c2, c3 = st.columns(3)
             c1.metric(L["direction"], d)
             c2.metric(L["elevation"], e)
             c3.metric(L["movement"], m)
+            
             if is_twilight: st.error(L["prime_viewing"])
         else:
             st.write(L["low_match_desc"])
