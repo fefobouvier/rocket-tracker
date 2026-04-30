@@ -116,7 +116,7 @@ for l in launches:
     
     # Identificación de país y emoji
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan", "Wenchang"])
-    is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
+    is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg", "SpaceX", "Texas"])
     country_emoji = "🇺🇸" if is_usa else "🇨🇳" if is_chinese else "🌍"
     
     is_twilight = 18 <= launch_uyt.hour <= 20
