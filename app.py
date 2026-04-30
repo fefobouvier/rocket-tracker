@@ -11,7 +11,7 @@ st.set_page_config(page_title="Rocket Tracker", page_icon="🚀", layout="wide")
 # --- DICCIONARIO MULTILINGÜE ---
 TEXTS = {
     "ES": {
-        "title": "🚀 Predictor de Avistamientos de Cohetes",
+        "title": "🚀 Lanzamientos de cohetes visibles desde Uruguay: horarios y predicción",
         "monitoring": f"Monitoreando: {LOCATION_NAME} ({LAT}, {LON})",
         "intro": """
         Esta app predice cuándo la **pluma de luz** de un cohete será visible desde Uruguay. 
