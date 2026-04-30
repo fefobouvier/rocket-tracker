@@ -40,7 +40,7 @@ TEXTS = {
         "loc_label": "Departamento",
         "match": "🎯 COINCIDENCIA",
         "twilight": "✨ CREPÚSCULO",
-        "launch_time": "⏰ Hora de lanzamiento:",
+        "launch_time": "⏰ Hora de lanzamiento (T-0):",
         "high_match_desc": "🎯 COINCIDENCIA: Patrón histórico detectado para Uruguay.",
         "low_match_desc": "🔭 Baja probabilidad de ver pluma iluminada.",
         "obs_window": "📅 Ventana de avistamiento de la pluma:",
@@ -48,7 +48,6 @@ TEXTS = {
         "elevation": "Elevación",
         "movement": "Movimiento",
         "prime_viewing": "✨ VISIÓN ÓPTIMA: Pluma iluminada por el sol (Efecto Jellyfish).",
-        "midnight_glow": "🌙 BRILLO NOCTURNO: Posible brillo de etapas superiores.",
         "btn_details": "🌐 Datos técnicos del lanzamiento",
         "fetching_error": "Error al conectar con la base de datos de lanzamientos.",
         "site_label": "Sitio de Lanzamiento",
@@ -71,7 +70,7 @@ TEXTS = {
         "loc_label": "Department",
         "match": "🎯 MATCH",
         "twilight": "✨ TWILIGHT",
-        "launch_time": "⏰ Launch time:",
+        "launch_time": "⏰ Launch time (T-0):",
         "high_match_desc": "🎯 MATCH: Historical sighting pattern detected.",
         "low_match_desc": "🔭 Low probability for a sunlit plume.",
         "obs_window": "📅 Plume sighting window:",
@@ -79,7 +78,6 @@ TEXTS = {
         "elevation": "Elevation",
         "movement": "Movement",
         "prime_viewing": "✨ PRIME VIEWING: Sunlit plume (Jellyfish effect).",
-        "midnight_glow": "🌙 MIDNIGHT GLOW: Possible upper stage glow.",
         "btn_details": "🌐 Launch Technical Data",
         "fetching_error": "Unable to connect to the launch database.",
         "site_label": "Launch Site",
@@ -104,7 +102,6 @@ lat, lon = DEPARTMENTS[selected_dept]
 st.markdown("""
     <style>
     [data-testid="stMetricValue"] { color: #1f1f1f !important; font-size: 1.5rem; }
-    [data-testid="stMetricLabel"] { color: #4f4f4f !important; }
     .stMetric { background-color: #f8f9fa !important; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; }
     </style>
     """, unsafe_allow_html=True)
@@ -131,9 +128,12 @@ for l in launches:
     name = l.get('name', 'Mission')
     site = l.get('pad', {}).get('location', {}).get('name', 'Unknown')
     
+    # Intentar obtener la hora T-0 más precisa
+    raw_time = l.get('net') or l.get('window_start')
+    if not raw_time: continue
+    
     try:
-        # Conversión UTC a UYT (-3)
-        time_utc = datetime.strptime(l.get('net'), "%Y-%m-%dT%H:%M:%SZ")
+        time_utc = datetime.strptime(raw_time, "%Y-%m-%dT%H:%M:%SZ")
         time_uyt = time_utc - timedelta(hours=3)
     except: continue
     
@@ -146,6 +146,7 @@ for l in launches:
     if is_match: label += f" {L['match']}"
     if is_twilight: label += f" {L['twilight']}"
 
+    # Título con día y hora exacta de T-0
     with st.expander(f"{time_uyt.strftime('%b %d | %H:%M')} - {name}{label}"):
         st.write(f"**{L['launch_time']}** {time_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
@@ -153,7 +154,7 @@ for l in launches:
         if is_match:
             st.success(L["high_match_desc"])
             
-            # Lógica de ventana de pluma (ajustada a tus reportes)
+            # Ventanas ajustadas (ej: Falcon 9 suele ser visible un tiempo después de T-0)
             if is_chinese:
                 t1, t2 = time_uyt + timedelta(minutes=15), time_uyt + timedelta(minutes=45)
                 d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
@@ -172,4 +173,4 @@ for l in launches:
         else:
             st.write(L["low_match_desc"])
 
-        st.link_button(L["btn_details"], "https://nextspaceflight.com/launches/")
+        st.link_button(L["btn_details"], f"https://nextspaceflight.com/launches/details/{l.get('id')}")
