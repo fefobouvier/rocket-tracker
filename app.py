@@ -95,7 +95,7 @@ st.divider()
 # --- DATA ---
 def get_launches():
     try:
-        url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10"
+        url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=20"
         return requests.get(url, timeout=10).json().get('results', [])
     except: return []
 
