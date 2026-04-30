@@ -159,4 +159,4 @@ for l in launches:
         else:
             st.write(L["low_match_desc"])
 
-        st.link_button(L["btn_details"], f"https://nextspaceflight.com/")
+        st.link_button(L["btn_details"], f"https://nextspaceflight.com/launches/")
