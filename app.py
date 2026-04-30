@@ -27,74 +27,74 @@ DEPARTMENTS = {
 
 TEXTS = {
     "ES": {
-        "title": "🚀 Predictor de Avistamientos de Cohetes",
+        "title": "🚀 Rastreador de Plumas UY",
         "intro": """
         Esta app nació de mi hábito de observar el cielo y de los reportes constantes que recibo de personas que me siguen en redes sociales. 
-        El objetivo es predecir cuándo un lanzamiento será visible desde Uruguay (especialmente las famosas 'plumas' de luz). 
+        El objetivo es predecir cuándo la **pluma de luz** (o 'jellyfish') de un cohete será visible desde Uruguay. 
         Creado por **Fefo Bouvier**.
         """,
-        "web_link": "🌐 Visitar mi web",
-        "monitoring": "Ubicación seleccionada:",
-        "timezone_notice": "⚠️ *Todos los horarios están expresados en la hora oficial de Uruguay (UYT).* ",
+        "web_link": "🌐 Visitar fefobouvier.com",
+        "monitoring": "Ubicación de observación:",
+        "timezone_notice": "⚠️ *Horarios sincronizados con la Hora Oficial de Uruguay (UYT).* ",
         "lang_label": "Idioma",
         "loc_label": "Departamento",
         "match": "🎯 COINCIDENCIA",
         "twilight": "✨ CREPÚSCULO",
-        "launch_time": "⏰ Hora exacta de lanzamiento:",
-        "high_match_desc": "🎯 COINCIDENCIA: Sigue tus patrones históricos de avistamiento.",
-        "low_match_desc": "🔭 Baja probabilidad de ver un 'jellyfish' (pluma iluminada).",
-        "obs_window": "📅 Ventana de observación estimada:",
+        "launch_time": "⏰ Hora de lanzamiento:",
+        "high_match_desc": "🎯 COINCIDENCIA: Patrón histórico detectado para Uruguay.",
+        "low_match_desc": "🔭 Baja probabilidad de ver pluma iluminada.",
+        "obs_window": "📅 Ventana de avistamiento de la pluma:",
         "direction": "Dirección",
         "elevation": "Elevación",
         "movement": "Movimiento",
-        "prime_viewing": "✨ VISIÓN ÓPTIMA: Pluma iluminada por el sol muy probable.",
-        "midnight_glow": "🌙 BRILLO NOCTURNO: Posible brillo a gran altitud.",
-        "btn_details": "🌐 Ver detalles de la misión",
-        "fetching_error": "No se pudieron obtener datos. Intenta refrescar luego.",
+        "prime_viewing": "✨ VISIÓN ÓPTIMA: Pluma iluminada por el sol (Efecto Jellyfish).",
+        "midnight_glow": "🌙 BRILLO NOCTURNO: Posible brillo de etapas superiores.",
+        "btn_details": "🌐 Datos técnicos del lanzamiento",
+        "fetching_error": "Error al conectar con la base de datos de lanzamientos.",
         "site_label": "Sitio de Lanzamiento",
         "sw_logic": "SUDOESTE (220°)",
         "n_logic": "NORTE (0°)",
-        "move_n": "al NORTE",
-        "move_ne": "al NORESTE"
+        "move_n": "Hacia el NORTE",
+        "move_ne": "Hacia el NORESTE"
     },
     "EN": {
-        "title": "🚀 Rocket Sighting Predictor",
+        "title": "🚀 Plume Tracker UY",
         "intro": """
-        This app was born from my habit of skywatching and the constant reports I receive from my followers on social media. 
-        The goal is to predict when a launch will be visible from Uruguay (especially the famous light plumes). 
+        This app was born from my habit of skywatching and the constant reports I receive from my followers. 
+        The goal is to predict when a rocket's **light plume** (or 'jellyfish') will be visible from Uruguay. 
         Created by **Fefo Bouvier**.
         """,
-        "web_link": "🌐 Visit my website",
-        "monitoring": "Selected Location:",
-        "timezone_notice": "⚠️ *All times are expressed in Uruguay Standard Time (UYT).* ",
+        "web_link": "🌐 Visit fefobouvier.com",
+        "monitoring": "Observation Location:",
+        "timezone_notice": "⚠️ *All times are synced with Uruguay Standard Time (UYT).* ",
         "lang_label": "Language",
         "loc_label": "Department",
         "match": "🎯 MATCH",
         "twilight": "✨ TWILIGHT",
-        "launch_time": "⏰ Exact launch time:",
-        "high_match_desc": "🎯 MATCH: Matches your historical sighting patterns.",
-        "low_match_desc": "🔭 Low probability for a sunlit 'jellyfish' plume.",
-        "obs_window": "📅 Estimated Observation Window:",
+        "launch_time": "⏰ Launch time:",
+        "high_match_desc": "🎯 MATCH: Historical sighting pattern detected.",
+        "low_match_desc": "🔭 Low probability for a sunlit plume.",
+        "obs_window": "📅 Plume sighting window:",
         "direction": "Direction",
         "elevation": "Elevation",
         "movement": "Movement",
-        "prime_viewing": "✨ PRIME VIEWING: Classic sunlit plume likely.",
-        "midnight_glow": "🌙 MIDNIGHT GLOW: Possible high-altitude glow.",
-        "btn_details": "🌐 View Mission Details",
-        "fetching_error": "Unable to fetch launch data. Please refresh later.",
+        "prime_viewing": "✨ PRIME VIEWING: Sunlit plume (Jellyfish effect).",
+        "midnight_glow": "🌙 MIDNIGHT GLOW: Possible upper stage glow.",
+        "btn_details": "🌐 Launch Technical Data",
+        "fetching_error": "Unable to connect to the launch database.",
         "site_label": "Launch Site",
         "sw_logic": "SOUTHWEST (220°)",
         "n_logic": "NORTH (0°)",
-        "move_n": "NORTH",
-        "move_ne": "NORTHEAST"
+        "move_n": "Moving NORTH",
+        "move_ne": "Moving NORTHEAST"
     }
 }
 
-st.set_page_config(page_title="Rocket Tracker UY", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Rastreador de Plumas UY", page_icon="🚀", layout="wide")
 
 # --- SIDEBAR ---
-st.sidebar.title("Settings / Ajustes")
-lang_choice = st.sidebar.radio("Idioma / Language", ("Español", "English"))
+st.sidebar.title("Configuración")
+lang_choice = st.sidebar.radio("Language / Idioma", ("Español", "English"))
 L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 
 selected_dept = st.sidebar.selectbox(L["loc_label"], list(DEPARTMENTS.keys()), index=0)
@@ -105,11 +105,11 @@ st.markdown("""
     <style>
     [data-testid="stMetricValue"] { color: #1f1f1f !important; font-size: 1.5rem; }
     [data-testid="stMetricLabel"] { color: #4f4f4f !important; }
-    .stMetric { background-color: #f0f2f6 !important; padding: 10px; border-radius: 8px; border: 1px solid #d1d1d1; }
+    .stMetric { background-color: #f8f9fa !important; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- HEADER & INTRO ---
+# --- HEADER ---
 st.title(L["title"])
 st.write(L["intro"])
 st.link_button(L["web_link"], "https://fefobouvier.com")
@@ -117,11 +117,11 @@ st.divider()
 st.subheader(f"{L['monitoring']} {selected_dept}")
 st.info(L["timezone_notice"])
 
-# --- DATA FETCHING ---
+# --- DATA ---
 def get_launches():
     try:
         url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10"
-        return requests.get(url).json().get('results', [])
+        return requests.get(url, timeout=10).json().get('results', [])
     except: return []
 
 launches = get_launches()
@@ -132,6 +132,7 @@ for l in launches:
     site = l.get('pad', {}).get('location', {}).get('name', 'Unknown')
     
     try:
+        # Conversión UTC a UYT (-3)
         time_utc = datetime.strptime(l.get('net'), "%Y-%m-%dT%H:%M:%SZ")
         time_uyt = time_utc - timedelta(hours=3)
     except: continue
@@ -139,28 +140,28 @@ for l in launches:
     is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
     is_twilight = 18 <= time_uyt.hour <= 20
-    is_midnight = 21 <= time_uyt.hour <= 23
-    
-    # Visual Badges
+    is_match = is_chinese or is_usa
+
     label = ""
-    if is_chinese or is_usa: label += f" {L['match']}"
+    if is_match: label += f" {L['match']}"
     if is_twilight: label += f" {L['twilight']}"
 
-    with st.expander(f"{time_uyt.strftime('%b %d - %H:%M')} | {name}{label}"):
+    with st.expander(f"{time_uyt.strftime('%b %d | %H:%M')} - {name}{label}"):
         st.write(f"**{L['launch_time']}** {time_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
         
-        if is_chinese or is_usa:
+        if is_match:
             st.success(L["high_match_desc"])
             
+            # Lógica de ventana de pluma (ajustada a tus reportes)
             if is_chinese:
-                t1, t2 = time_uyt + timedelta(minutes=20), time_uyt + timedelta(minutes=50)
+                t1, t2 = time_uyt + timedelta(minutes=15), time_uyt + timedelta(minutes=45)
                 d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
             else:
-                t1, t2 = time_uyt + timedelta(hours=2), time_uyt + timedelta(hours=4)
+                t1, t2 = time_uyt + timedelta(hours=1, minutes=45), time_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
-            st.info(f"{L['obs_window']} {t1.strftime('%H:%M')} — {t2.strftime('%H:%M')} UYT")
+            st.info(f"{L['obs_window']} **{t1.strftime('%H:%M')} — {t2.strftime('%H:%M')} UYT**")
             
             c1, c2, c3 = st.columns(3)
             c1.metric(L["direction"], d)
@@ -168,7 +169,6 @@ for l in launches:
             c3.metric(L["movement"], m)
 
             if is_twilight: st.error(L["prime_viewing"])
-            elif is_midnight: st.warning(L["midnight_glow"])
         else:
             st.write(L["low_match_desc"])
 
