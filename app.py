@@ -98,11 +98,26 @@ L = TEXTS["ES"] if lang_choice == "Español" else TEXTS["EN"]
 selected_dept = st.sidebar.selectbox(L["loc_label"], list(DEPARTMENTS.keys()), index=0)
 lat, lon = DEPARTMENTS[selected_dept]
 
-# --- STYLING ---
+# --- STYLING (FIXED CONTRAST) ---
 st.markdown("""
     <style>
-    [data-testid="stMetricValue"] { color: #1f1f1f !important; font-size: 1.5rem; }
-    .stMetric { background-color: #f8f9fa !important; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; }
+    /* Estilo para los valores de las métricas (Dirección, Elevación, Movimiento) */
+    [data-testid="stMetricValue"] { 
+        color: #FFFFFF !important; 
+        font-size: 1.5rem !important; 
+        font-weight: 700 !important;
+    }
+    /* Estilo para las etiquetas de las métricas */
+    [data-testid="stMetricLabel"] { 
+        color: #E0E0E0 !important; 
+    }
+    /* Contenedor de la métrica: Fondo oscuro para asegurar visibilidad del texto blanco */
+    div[data-testid="stMetric"] {
+        background-color: #262730 !important;
+        padding: 15px !important;
+        border-radius: 10px !important;
+        border: 1px solid #464855 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -128,7 +143,7 @@ for l in launches:
     name = l.get('name', 'Mission')
     site = l.get('pad', {}).get('location', {}).get('name', 'Unknown')
     
-    # Intentar obtener la hora T-0 más precisa
+    # Priorizar hora NET para evitar el error de ventana de las 23:00
     raw_time = l.get('net') or l.get('window_start')
     if not raw_time: continue
     
@@ -146,7 +161,6 @@ for l in launches:
     if is_match: label += f" {L['match']}"
     if is_twilight: label += f" {L['twilight']}"
 
-    # Título con día y hora exacta de T-0
     with st.expander(f"{time_uyt.strftime('%b %d | %H:%M')} - {name}{label}"):
         st.write(f"**{L['launch_time']}** {time_uyt.strftime('%H:%M')} UYT")
         st.write(f"**{L['site_label']}:** {site}")
@@ -154,11 +168,11 @@ for l in launches:
         if is_match:
             st.success(L["high_match_desc"])
             
-            # Ventanas ajustadas (ej: Falcon 9 suele ser visible un tiempo después de T-0)
             if is_chinese:
                 t1, t2 = time_uyt + timedelta(minutes=15), time_uyt + timedelta(minutes=45)
                 d, e, m = L["sw_logic"], "15°-35°", L["move_n"]
             else:
+                # Ventana para Florida: la pluma aparece tiempo después del despegue
                 t1, t2 = time_uyt + timedelta(hours=1, minutes=45), time_uyt + timedelta(hours=3, minutes=30)
                 d, e, m = L["n_logic"], "20°-40°", L["move_ne"]
 
