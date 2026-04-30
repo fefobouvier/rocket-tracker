@@ -115,7 +115,7 @@ for l in launches:
     except: continue
     
     # Identificación de país y emoji
-    is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan"])
+    is_chinese = any(w in site for w in ["Taiyuan", "Xichang", "Jiuquan", "Wenchang"])
     is_usa = any(w in site for w in ["Florida", "Kennedy", "Cape Canaveral", "Vandenberg"])
     country_emoji = "🇺🇸" if is_usa else "🇨🇳" if is_chinese else "🌍"
     
